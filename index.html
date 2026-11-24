@@ -626,13 +626,13 @@ button, img { -webkit-touch-callout: none; }
 .seat.hand-open .holdings-button { color:#fff3d6; box-shadow:inset 0 .11rem .18rem #101a2180,0 .08rem 0 #c7af7b; }
 /* Expose the foil on the sheet itself. Clipping only the illustration keeps
    the numbers and gems stationary when buying power changes. */
-:is(.affordable,[data-expansion-offer="free"]) .card-stock, .card-stock.gilded-in-flight {
+:is(.affordable,[data-expansion-offer="free"],:where(.market-card).has-advice) .card-stock, .card-stock.gilded-in-flight {
   --foil-width:clamp(2.15px,.32rem,5px);
   --foil-corner:calc(var(--foil-width) + clamp(2px,.48rem,7px));
   --edge-light:0 0 clamp(2.8px,.48rem,7px) .35px #f5ae2499;
-  background:linear-gradient(127deg,#fff6ba 0%,#ffd654 12%,#cf8c16 26%,#ffda52 48%,#fff3a6 63%,#ebae28 80%,#ffdb66 100%);
+  background:var(--advice-foil,linear-gradient(127deg,#fff6ba 0%,#ffd654 12%,#cf8c16 26%,#ffda52 48%,#fff3a6 63%,#ebae28 80%,#ffdb66 100%));
 }
-:is(.affordable,[data-expansion-offer="free"]) .card-picture, .gilded-in-flight .card-picture {
+:is(.affordable,[data-expansion-offer="free"],:where(.market-card).has-advice) .card-picture, .gilded-in-flight .card-picture {
   --far:calc(100% - var(--foil-width));
   --shoulder:calc(100% - var(--foil-corner));
   clip-path:polygon(var(--foil-corner) var(--foil-width),var(--shoulder) var(--foil-width),
@@ -642,9 +642,9 @@ button, img { -webkit-touch-callout: none; }
 }
 @media (prefers-reduced-motion:no-preference) {
   /* The opaque card face covers the middle of the sweep; only the exposed foil catches it. */
-  .market-card.affordable .card-stock::before {
+  .market-card:is(.affordable,.has-advice) .card-stock::before {
     content:""; position:absolute; inset:0; pointer-events:none; opacity:0;
-    background:linear-gradient(116deg,transparent 33%,#fff8cb82 44%,#fffce4 50%,#fff6b45e 56%,transparent 67%);
+    background:linear-gradient(116deg,transparent 33%,var(--advice-sheen,#fff8cb82) 44%,var(--advice-flash,#fffce4) 50%,var(--advice-sheen,#fff6b45e) 56%,transparent 67%);
     animation:gilded-edge .62s cubic-bezier(.24,.53,.37,1) 1;
   }
   @keyframes gilded-edge {
@@ -780,7 +780,7 @@ button, img { -webkit-touch-callout: none; }
 .pocket-paper.in-hand { visibility:hidden; }
 .hand-leaf { perspective:720px; transform-style:preserve-3d; }
 .hand-leaf > .card-stock, .hand-reverse { backface-visibility:hidden; -webkit-backface-visibility:hidden; }
-.hand-leaf > .hand-reverse { inset:0; width:100%; height:100%; transform:rotateY(180deg); }
+.hand-leaf > .hand-reverse { inset:0; width:100%; height:100%; transform:rotateY(180deg); visibility:hidden; }
 #bank-station { grid-area:bank; position:relative; min-height:0; min-width:0; width:100%; max-width:var(--middle-max); justify-self:center; padding:.35rem 0 .15rem; display:flex; align-items:stretch; }
 .bank-zone { flex:1; display:flex; position:relative; isolation:isolate; min-width:0; min-height:0; padding:.43rem .85rem .34rem;
   border:.17rem solid transparent; }
@@ -848,22 +848,56 @@ button, img { -webkit-touch-callout: none; }
 .assistive { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap; }
 
 /* The compass is printed on the same pale-blue paper as the assistance switch. */
-.has-advice:not(:focus-visible):is(.market-card,.deck,.noble-tile,.holdings-button,#turn-action,[data-cost-color]) {
-  outline:2px solid #8cbfce; outline-offset:1px;
+.has-advice {
+  --advice-rim:#388fca; --advice-glow:#59bdffe0; --advice-ink:#174866;
+  --advice-paper:#b6e6fb; --advice-sheen:#caf4ff91; --advice-flash:#edfdff;
+  --advice-foil:linear-gradient(127deg,#edfdff,#65d2ff 12%,#297ebd 26%,#53c1ff 48%,#d6f9ff 63%,#3697d8 80%,#9be9ff);
+}
+.has-advice[data-advice="reserve"] {
+  --advice-rim:#8650aa; --advice-glow:#c98df5d9; --advice-ink:#4f2c69;
+  --advice-paper:#dec4fa; --advice-sheen:#f4d8ff91; --advice-flash:#fbf0ff;
+  --advice-foil:linear-gradient(127deg,#fbebff,#cf9bff 12%,#8751b1 26%,#c38aeb 48%,#efd5ff 63%,#ab70cc 80%,#e5b4ff);
+}
+.market-card.has-advice .card-stock {
+  --foil-width:clamp(3.2px,.44rem,6.5px);
+  --edge-light:0 0 0 1px var(--advice-rim),0 0 5px 1px var(--advice-glow);
+}
+.deck[data-advice="reserve"] .deck-top {
+  border:clamp(3px,.4rem,6px) solid transparent;
+  background:var(--back) center/cover no-repeat padding-box,var(--advice-foil) border-box;
+  box-shadow:0 0 0 1px var(--advice-rim),0 0 5px 1px var(--advice-glow);
+}
+.has-advice:not(:focus-visible):is(.noble-tile,#turn-action,[data-cost-color]) {
+  outline:2px solid var(--advice-rim); outline-offset:1px;
 }
 .has-advice[data-cost-color] { position:relative; }
+.seat .holdings-button[data-advice="buy"] {
+  border-radius:4px;
+  box-shadow:inset 0 0 0 3px #d1f5ff,inset 0 0 8px 3px #318ecc99,0 0 5px 1px var(--advice-glow);
+}
+.seat .holdings-button[data-advice="buy"]:not(:focus-visible) { outline:2px solid #5abfff; outline-offset:-2px; }
+.holdings-button[data-advice="buy"] > .advice-stamp { top:2px; right:2px; }
 .advice-stamp {
   position:absolute; z-index:16; pointer-events:none; top:45%; right:0;
   display:inline-flex; align-items:center; justify-content:center; gap:2px;
-  padding:2px 4px 2px 5px; border:1px solid #648e9c; border-radius:6px 1px 1px 6px;
-  color:#244d60; background:linear-gradient(110deg,#e2f2ef,#acd3df);
+  padding:2px 4px 2px 5px; border:1px solid var(--advice-rim); border-radius:6px 1px 1px 6px;
+  color:var(--advice-ink); background:linear-gradient(110deg,#f5f6ee,var(--advice-paper));
   box-shadow:0 1px 2px #213e4959; white-space:nowrap;
   font:700 clamp(9px,1.7vmin,13px)/1.15 var(--serif);
 }
 .advice-stamp b { font:inherit; color:inherit; }
 .advice-stamp .icon { width:1em; height:1em; fill:#f6f5d6; stroke-width:1.8; }
-:is(.bank-pile,.wallet-well) > .advice-stamp { top:1px; left:0; right:auto; border-radius:2px 6px 6px 2px; padding:1px 3px; }
-.wallet-well > .advice-stamp { z-index:32; }
+:is(.chip-stack,.wallet-stack) > .advice-stamp {
+  display:block; inset:calc(8% - var(--halo-depth,0) * var(--pitch)) -4% -2%;
+  padding:0; background:transparent; border:2px solid #58c2ff; border-radius:50%;
+  box-shadow:inset 0 0 0 1px #e1faff,0 0 0 1px #26658c,0 0 5px 2px #58bfffce;
+}
+:is(.chip-stack,.wallet-stack) > .advice-stamp .icon { display:none; }
+:is(.chip-stack,.wallet-stack) > .advice-stamp b {
+  position:absolute; left:-2px; top:-.55em; padding:1px 3px; border-radius:5px;
+  background:#c7edff; color:#163d58; box-shadow:0 0 0 1px #386c90;
+  font:700 clamp(9px,1.7vmin,13px)/1 var(--sans);
+}
 :is(#turn-action,.price) > .advice-stamp { top:0; right:0; border-radius:50%; padding:2px; }
 :is(#turn-action,.price) > .advice-stamp b { display:none; }
 #turn-action.has-advice { outline-offset:-1px; }
@@ -1456,16 +1490,12 @@ button, img { -webkit-touch-callout: none; }
 .rival-choice input:focus-visible + span { outline:2px solid #18516a; outline-offset:2px; }
 #cover-mode .match-choice { margin:0; }
 #cover-mode .rival-choice { margin:2px 0 0; }
-.cover-solo-options { display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:0 8px; }
-.cover-solo-options .rival-choice label span { padding-inline:5px; }
-.assist-choice[hidden] { display:none; }
 .assist-choice { margin:0; gap:6px; min-height:42px; }
 .assist-choice > span { display:inline-flex; align-items:center; gap:4px; }
 .assist-choice .icon { width:15px; height:15px; color:#537b89; fill:#c5e0e6; }
 .assist-choice input:checked { background-color:#d1e7e9; border-color:#648697; }
 .assist-choice input:checked::after { border-color:#355c70; }
 .dlg-seats-page > .assist-choice { grid-column:1/-1; margin-top:3px; }
-.cover-solo-options .assist-choice { font-size:13px; }
 #cover-mode legend { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); }
 .dlg-seat-sign .rival-choice { width:100%; margin:0; }
 .dlg-seat-sign .rival-choice legend { margin:0; font:550 11px/1.2 var(--sans); color:var(--folio-muted); }
@@ -5707,23 +5737,30 @@ SOFTWARE.
 
   function display(targets, description) {
     for (const [node,stamp] of shown) {
-      if (targets.has(node) && stamp.parentNode === node) continue;
+      if (targets.has(node) && node.contains(stamp)) continue;
       node.classList.remove("has-advice");
+      delete node.dataset.advice;
       node.removeAttribute("aria-describedby");
       stamp.remove();
       shown.delete(node);
     }
     for (const [node,label] of targets) {
       let stamp = shown.get(node);
+      const stack = node.querySelector(".chip-stack, .wallet-stack");
       if (!stamp) {
         stamp = document.createElement("span");
         stamp.className = "advice-stamp";
         stamp.setAttribute("aria-hidden","true");
         stamp.innerHTML = BoardGraphics.icon("compass") + "<b></b>";
-        node.append(stamp);
+        (stack || node).append(stamp);
         node.classList.add("has-advice");
         node.setAttribute("aria-describedby","advice-status");
         shown.set(node,stamp);
+      }
+      node.dataset.advice = recommendation.action?.type || "unavailable";
+      if (stack) {
+        const resting = stack.querySelectorAll("img:not(.is-raised):not(.is-returning)");
+        stamp.style.setProperty("--halo-depth",resting.length ? resting[resting.length-1].dataset.layer : 0);
       }
       if (stamp.lastChild.textContent !== label) stamp.lastChild.textContent = label;
     }
@@ -5780,6 +5817,8 @@ SOFTWARE.
     } else if (!bank && (action.type === "reserve" || action.type === "buy")) {
       const held = state.players[0].reserved.includes(action.id);
       const reserve = action.type === "reserve";
+      const piece = held ? (hand === null ? "#seat-0 .holdings-button" : '[data-hand-card="'+action.id+'"]') :
+        action.tier ? '.deck[data-pile="base"][data-value="'+action.tier+'"]' : '.market-card[data-value="'+action.id+'"]';
       const selectionMatches = card && card.type === action.type &&
         (action.id ? card.id === action.id : card.tier === action.tier);
       const name = action.id ? Table.artName(action.id) : ["","Ⅰ","Ⅱ","Ⅲ"][action.tier]+"级牌堆";
@@ -5789,6 +5828,7 @@ SOFTWARE.
         display(targets,""); return;
       }
       if (selectionMatches) {
+        mark(piece,action.tier ? "盲抽" : reserve ? "预留" : "购买");
         if (action.pay && card.pay.some((n,c)=>n !== action.pay[c])) {
           for (let c=0;c<5;c++) {
             if (card.pay[c] <= action.pay[c]) continue;
@@ -5797,15 +5837,11 @@ SOFTWARE.
           }
         } else confirm();
       } else if (!card || (reserve && card.fromSlot && !card.id && !card.tier)) {
-        if (held) {
-          if (hand === null) mark("#seat-0 .holdings-button","看手牌");
-          else mark('[data-hand-card="'+action.id+'"]',"购买");
-        } else if (action.tier) mark('.deck[data-pile="base"][data-value="'+action.tier+'"]',"盲抽");
-        else {
-          const longPress = reserve && !card?.fromSlot && Splendor.payment(state,action.id).canBuy;
-          mark('.market-card[data-value="'+action.id+'"]',longPress ? "长按预留" : reserve ? "预留" : "购买");
-          if (longPress) text += "长按这张牌进入预留。";
-        }
+        const longPress = reserve && action.id && !card?.fromSlot && Splendor.payment(state,action.id).canBuy;
+        const label = held && hand === null ? "看手牌" : action.tier ? "盲抽" :
+          longPress ? "长按预留" : reserve ? "预留" : "购买";
+        mark(piece,label);
+        if (longPress) text += "长按这张牌进入预留。";
       }
     }
     display(targets,targets.size ? "棋步辅助："+text : "");
@@ -7486,7 +7522,9 @@ SOFTWARE.
           ? [{rotate:"y " + start + "deg", clipPath:inPocket}, {offset:.22, rotate:"y " + (.88 * start) + "deg", clipPath:uncut}, {rotate:"y 0deg", clipPath:uncut}]
           : [{rotate:"y " + start + "deg", clipPath:uncut}, {offset:.72, rotate:"y " + end + "deg", clipPath:uncut}, {rotate:"y " + end + "deg", clipPath:inPocket}];
         const turnTiming = opening ? {...timing, fill:"backwards"} : timing;
-        card.sides = [face.animate(turning, turnTiming), card.back.animate(turning, turnTiming)];
+        // Only the turn needs both sides. At rest a flattened WebKit layer can paint a mirrored back over the face.
+        const reverse = turning.map(frame => ({...frame,visibility:"visible"}));
+        card.sides = [face.animate(turning, turnTiming), card.back.animate(reverse, turnTiming)];
         if (!opening) card.animation.finished.then(() => returnPaper(card), () => {});
       }
     }
@@ -8618,16 +8656,9 @@ This Agreement is governed by the laws of the State of New York and the intellec
   function readDifficulty(parent) {
     return parent.querySelector("[data-rival-difficulty]:checked")?.value || Table.difficulty;
   }
-  function assistChoice(enabled,mode) {
-    if (!RivalTurn.supportsHard) return "";
-    return '<label class="opening-choice assist-choice" title="由困难棋手推荐下一步"'+(mode==="solo" ? '' : ' hidden')+'><input type="checkbox" aria-label="棋步辅助，由困难棋手推荐" data-solo-assist'+
-      (enabled ? ' checked' : '')+'><span>'+BoardGraphics.icon("compass")+'棋步辅助</span></label>';
-  }
   function showDifficulty(parent, mode) {
     const choice = parent.querySelector(".rival-choice");
     if (choice) choice.hidden = choice.disabled = mode !== "solo";
-    const assist = parent.querySelector(".assist-choice");
-    if (assist) assist.hidden = mode !== "solo";
   }
 
   // Keep both drafts while comparing modes within a new-game folio.
@@ -8652,7 +8683,7 @@ This Agreement is governed by the laws of the State of New York and the intellec
     for (const field of parent.querySelectorAll("[data-match-mode]")) field.addEventListener("change",update);
     update();
   }
-  globalThis.GamePacks = Object.freeze({register, selection, savedSelection, create, choices, openingChoice, modeChoice, readMode, difficultyChoice, readDifficulty, assistChoice, bindMatchForm, readChoices, syncChoices, boxes});
+  globalThis.GamePacks = Object.freeze({register, selection, savedSelection, create, choices, openingChoice, modeChoice, readMode, difficultyChoice, readDifficulty, bindMatchForm, readChoices, syncChoices, boxes});
 
   const cover = document.getElementById("game-cover");
   const dialog = document.getElementById("cover-dialog");
@@ -8661,7 +8692,6 @@ This Agreement is governed by the laws of the State of New York and the intellec
   let proposed = ["base"];
   let proposedMode = "local";
   let proposedDifficulty = "easy";
-  let proposedAssist = false;
   let proposedFirst = null;
   let curtain = null;
 
@@ -8670,7 +8700,6 @@ This Agreement is governed by the laws of the State of New York and the intellec
     proposed = selection(Table.packs);
     proposedMode = Table.mode;
     proposedDifficulty = Table.difficulty;
-    proposedAssist = Table.options.assist;
     proposedFirst = null;
     curtain?.cancel();
     curtain = null;
@@ -8701,12 +8730,10 @@ This Agreement is governed by the laws of the State of New York and the intellec
     const selector = document.getElementById("cover-mode");
     selector.hidden = !!state;
     if (!state) {
-      selector.innerHTML = modeChoice(proposedMode, "cover-mode") + '<div class="cover-solo-options">' +
-        difficultyChoice(proposedDifficulty,"cover-difficulty",proposedMode) + assistChoice(proposedAssist,proposedMode) + '</div>';
+      selector.innerHTML = modeChoice(proposedMode, "cover-mode") + difficultyChoice(proposedDifficulty,"cover-difficulty",proposedMode);
       selector.onchange = () => {
         proposedMode = readMode(selector);
         proposedDifficulty = readDifficulty(selector);
-        proposedAssist = !!selector.querySelector("[data-solo-assist]")?.checked;
         showDifficulty(selector,proposedMode);
       };
     }
@@ -8756,7 +8783,7 @@ This Agreement is governed by the laws of the State of New York and the intellec
     const seats = Table.options.names.map((name, i) => '<label><input type="radio" name="cover-first" value="' + i + '"' +
       (i === first ? ' checked' : '') + '><span' + (i ? ' data-second-name="'+Table.escape(name)+'"' : '') + '>' + Table.escape(name) + '</span></label>');
     const content = (fresh ? '<p class="cover-dialog-note">确认后将替换当前对局，重新洗牌开局。</p>' : '') +
-      modeChoice(proposedMode, "cover-dialog-mode") + difficultyChoice(proposedDifficulty,"cover-dialog-difficulty",proposedMode) + assistChoice(proposedAssist,proposedMode) +
+      modeChoice(proposedMode, "cover-dialog-mode") + difficultyChoice(proposedDifficulty,"cover-dialog-difficulty",proposedMode) +
       '<fieldset class="lobby-first"><legend>先手玩家</legend><div>' +
       seats.join("") + '</div></fieldset>';
     dialog.innerHTML = '<div class="cover-dialog-body"><h2 id="cover-dialog-title">' + title + '</h2><div class="cover-dialog-fields">' + content +
@@ -8778,7 +8805,7 @@ This Agreement is governed by the laws of the State of New York and the intellec
       case "start":
         if (Table.hasGame) openDialog("new");
         else try {
-          Table.newGame(proposedFirst ?? Table.options.nextFirst ?? 0,proposed,{mode:proposedMode,difficulty:proposedDifficulty,assist:proposedAssist});
+          Table.newGame(proposedFirst ?? Table.options.nextFirst ?? 0,proposed,{mode:proposedMode,difficulty:proposedDifficulty});
         } catch (problem) {
           const error = document.getElementById("cover-start-error");
           error.textContent = problem.message;
@@ -8793,9 +8820,6 @@ This Agreement is governed by the laws of the State of New York and the intellec
         proposed = readChoices(dialog);
         proposedMode = readMode(dialog);
         proposedDifficulty = readDifficulty(dialog);
-        proposedAssist = !!dialog.querySelector("[data-solo-assist]")?.checked;
-        const coverAssist = document.querySelector("#cover-mode [data-solo-assist]");
-        if (coverAssist) coverAssist.checked = proposedAssist;
         proposedFirst = Number(dialog.querySelector("input[name=cover-first]:checked").value);
         Table.setNextOpening(dialog.querySelector("[data-balanced-opening]").checked,proposedMode);
         const coverMode = document.querySelector('#cover-mode input[value="' + proposedMode + '"]');
@@ -8808,7 +8832,7 @@ This Agreement is governed by the laws of the State of New York and the intellec
       case "confirm-new": {
         const first = Number(dialog.querySelector("input[name=cover-first]:checked").value);
         try {
-          Table.newGame(first,readChoices(dialog),{mode:readMode(dialog),difficulty:readDifficulty(dialog),assist:!!dialog.querySelector("[data-solo-assist]")?.checked,nextFirst:first,balancedOpening:dialog.querySelector("[data-balanced-opening]").checked});
+          Table.newGame(first,readChoices(dialog),{mode:readMode(dialog),difficulty:readDifficulty(dialog),nextFirst:first,balancedOpening:dialog.querySelector("[data-balanced-opening]").checked});
         } catch (problem) {
           const error = dialog.querySelector(".cover-error");
           error.textContent = problem.message;
@@ -9735,10 +9759,12 @@ This Agreement is governed by the laws of the State of New York and the intellec
         ${level || `<label class="dlg-name-field"><span>${seat}</span><input type="text" data-player-name="${i}" maxlength="12" autocomplete="off" value="${escape(name)}" aria-label="${seat}玩家名字" ${computer ? "readonly" : ""}></label>`}</div>`;
     }).join("");
     const lan = table().mode === "lan";
+    const assist = table().mode === "solo" && RivalTurn.supportsHard ?
+      `<label class="opening-choice assist-choice" title="由困难棋手推荐下一步"><input type="checkbox" aria-label="棋步辅助，由困难棋手推荐" data-solo-assist ${draft.assist ? "checked" : ""}><span>${icon("compass")}棋步辅助</span></label>` : "";
     const actions = lan ? button("lan-room","联机房间",{variant:"primary"}) :
       button("new-prompt","新开一局",{variant:"primary",symbol:"turn"}) + button("cover","返回封面");
     const body = `<div class="dlg-settings"><div class="dlg-settings-start">${actions}</div>
-      ${lan ? "" : '<fieldset class="dlg-fieldset dlg-seats-page"><legend>新局先手 <small>本局先手 · '+escape(playerName(view.state.first))+'</small></legend>'+seats+GamePacks.assistChoice(draft.assist,table().mode)+'</fieldset>'}
+      ${lan ? "" : '<fieldset class="dlg-fieldset dlg-seats-page"><legend>新局先手 <small>本局先手 · '+escape(playerName(view.state.first))+'</small></legend>'+seats+assist+'</fieldset>'}
       <fieldset class="dlg-fieldset dlg-sound-page"><legend>声音与触感</legend><div class="dlg-sound-keys">
         <label class="dlg-instrument" title="《晚潮归港》"><b>背景音乐</b><input type="checkbox" data-table-music ${draft.music ? "checked" : ""}><i class="dlg-dial" aria-hidden="true"></i><span class="dlg-dial-state" aria-hidden="true"><i class="on">开</i><i class="off">关</i></span></label>
         <label class="dlg-instrument" title="筹码、翻牌与贵族来访"><b>桌面音效</b><input type="checkbox" data-table-sound ${draft.sound ? "checked" : ""}><i class="dlg-dial" aria-hidden="true"></i><span class="dlg-dial-state" aria-hidden="true"><i class="on">开</i><i class="off">关</i></span></label></div>
@@ -9776,7 +9802,7 @@ This Agreement is governed by the laws of the State of New York and the intellec
     const { draft, state } = view;
     const message = state.phase === "over" ? "双方将从零声望重新开始。" : "新局会替换当前进度，双方将从零声望重新开始。";
     return { title: "新开一局？", symbol: "turn", body: note(message, "dlg-highlight") + GamePacks.modeChoice(draft.mode,"reset-mode") +
-      GamePacks.difficultyChoice(draft.difficulty,"reset-difficulty",draft.mode) + GamePacks.assistChoice(draft.assist,draft.mode) + firstSelector(draft, "先手玩家") +
+      GamePacks.difficultyChoice(draft.difficulty,"reset-difficulty",draft.mode) + firstSelector(draft, "先手玩家") +
       GamePacks.openingChoice(draft.balancedOpening) + GamePacks.choices(draft.packs),
       foot: button("back", "返回") + button("reset", "确认开局", { variant: "primary", symbol: "check" }) };
   }
@@ -9940,8 +9966,7 @@ This Agreement is governed by the laws of the State of New York and the intellec
         const balancedOpening = getLayer().querySelector("[data-balanced-opening]").checked;
         const mode = GamePacks.readMode(getLayer());
         const difficulty = GamePacks.readDifficulty(getLayer());
-        const assist = !!getLayer().querySelector("[data-solo-assist]")?.checked;
-        transact(() => table().newGame(first, packs, {mode, difficulty, assist, names:draft.names, sound:draft.sound, haptics:draft.haptics, music:draft.music, musicVolume:draft.musicVolume, nextFirst:first, balancedOpening}));
+        transact(() => table().newGame(first, packs, {mode, difficulty, assist:draft.assist, names:draft.names, sound:draft.sound, haptics:draft.haptics, music:draft.music, musicVolume:draft.musicVolume, nextFirst:first, balancedOpening}));
         break;
       }
       case "rematch":
@@ -12206,7 +12231,8 @@ This Agreement is governed by the laws of the State of New York and the intellec
     if (btn.dataset.open) {
       const kind = btn.dataset.open;
       const value = btn.dataset.value !== undefined && ["bank", "deck", "player"].includes(kind) ? Number(btn.dataset.value) : btn.dataset.value;
-      const tab = event.target.closest(".reserve-fan > .vacant") ? "reserve-slot" : btn.dataset.tab;
+      const vacant = event.target.closest(".reserve-fan > .vacant");
+      const tab = vacant && btn.dataset.advice !== "buy" ? "reserve-slot" : btn.dataset.tab;
       Controls.open(kind, value, tab, btn.dataset.pile);
     }
   });
