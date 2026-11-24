@@ -1173,6 +1173,8 @@ button, img { -webkit-touch-callout: none; }
 .dlg-fieldset legend { padding:0; }
 .dlg-seats-page { grid-area:seats; }
 .dlg-seats-page legend, .dlg-sound-page legend { padding:0; margin:0 0 7px; color:#635239; font:700 16px/1.4 var(--serif); letter-spacing:.08em; }
+.dlg-seats-page > legend { max-width:100%; }
+.dlg-seats-page > legend small { display:inline-block; max-width:100%; color:var(--folio-muted); font:500 12px/1.4 var(--sans); letter-spacing:0; overflow-wrap:anywhere; }
 .dlg-seat-sign { min-width:0; display:grid; grid-template-columns:clamp(43px,9cqi,57px) minmax(0,1fr); align-items:center; gap:5px; margin:2px 0 6px; }
 .dlg-seat-order { display:grid; place-items:center; position:relative; width:100%; min-height:49px; cursor:pointer; }
 .dlg-seat-order input, .dlg-instrument input, .dlg-first-options input { position:absolute; width:1px; height:1px; margin:0; opacity:0; }
@@ -9467,7 +9469,7 @@ This Agreement is governed by the laws of the State of New York and the intellec
     const detail = (title, text) => `<details class="dlg-rule"><summary>${title}</summary>${text}</details>`;
     const end = state.cities
       ? "回合结束时，只要有人满足任一城市的全部条件，就完成当轮。仅一人达城时，该玩家获胜。双方都达城时比较声望，同分时场上发展卡较少者胜，再同则并列。"
-      : "有人达到十五点声望后，完成当轮，让双方行动次数相同。声望高者获胜。同分时场上发展卡较少者胜，仍相同则并列。";
+      : "每轮双方各行动一次。先手率先达到 15 点声望，后手还有最后一手。后手率先达到 15 点，结算完这个回合就结束。声望高者获胜。同分时场上发展卡较少者胜，仍相同则并列。";
     const objectives = [state.cities ? "城市" : "贵族", ...(state.posts ? ["贸易站"] : [])].join("和");
     const modules = [];
     if (state.cities) {
@@ -9531,7 +9533,7 @@ This Agreement is governed by the laws of the State of New York and the intellec
       const computer = table().mode === "solo" && i === 1;
       const name = computer ? playerName(1) : draft.names[i];
       const level = computer && GamePacks.difficultyChoice(draft.difficulty,"table-difficulty","solo");
-      return `<div class="dlg-seat-sign" data-seat="${i}"><label class="dlg-seat-order"><input type="radio" name="dlg-first" value="${i}" ${draft.nextFirst === i ? "checked" : ""} aria-label="${escape(name)}先手">
+      return `<div class="dlg-seat-sign" data-seat="${i}"><label class="dlg-seat-order"><input type="radio" name="dlg-first" value="${i}" ${draft.nextFirst === i ? "checked" : ""} aria-label="新局由${escape(name)}先手">
         <span class="dlg-order-seal"><img alt="" src="${escape(table().sealURL(i))}"><i class="on">先手</i><i class="off">后手</i></span></label>
         ${level || `<label class="dlg-name-field"><span>${seat}</span><input type="text" data-player-name="${i}" maxlength="12" autocomplete="off" value="${escape(name)}" aria-label="${seat}玩家名字" ${computer ? "readonly" : ""}></label>`}</div>`;
     }).join("");
@@ -9539,7 +9541,7 @@ This Agreement is governed by the laws of the State of New York and the intellec
     const actions = lan ? button("lan-room","联机房间",{variant:"primary"}) :
       button("new-prompt","新开一局",{variant:"primary",symbol:"turn"}) + button("cover","返回封面");
     const body = `<div class="dlg-settings"><div class="dlg-settings-start">${actions}</div>
-      ${lan ? "" : '<fieldset class="dlg-fieldset dlg-seats-page"><legend>席位与先手</legend>'+seats+'</fieldset>'}
+      ${lan ? "" : '<fieldset class="dlg-fieldset dlg-seats-page"><legend>新局先手 <small>本局先手 · '+escape(playerName(view.state.first))+'</small></legend>'+seats+'</fieldset>'}
       <fieldset class="dlg-fieldset dlg-sound-page"><legend>声音与触感</legend><div class="dlg-sound-keys">
         <label class="dlg-instrument" title="《晚潮归港》"><b>背景音乐</b><input type="checkbox" data-table-music ${draft.music ? "checked" : ""}><i class="dlg-dial" aria-hidden="true"></i><span class="dlg-dial-state" aria-hidden="true"><i class="on">开</i><i class="off">关</i></span></label>
         <label class="dlg-instrument" title="筹码、翻牌与贵族来访"><b>桌面音效</b><input type="checkbox" data-table-sound ${draft.sound ? "checked" : ""}><i class="dlg-dial" aria-hidden="true"></i><span class="dlg-dial-state" aria-hidden="true"><i class="on">开</i><i class="off">关</i></span></label></div>
