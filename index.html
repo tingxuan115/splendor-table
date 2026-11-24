@@ -847,15 +847,13 @@ button, img { -webkit-touch-callout: none; }
 #turn-action:enabled:active .action-piece { transform:translateY(.12rem) scale(.974); }
 .assistive { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap; }
 
-/* The compass is printed on the same pale-blue paper as the assistance switch. */
+/* Hints follow the edge of the physical component, leaving the illustration exposed. */
 .has-advice {
-  --advice-rim:#388fca; --advice-glow:#59bdffe0; --advice-ink:#174866;
-  --advice-paper:#b6e6fb; --advice-sheen:#caf4ff91; --advice-flash:#edfdff;
+  --advice-rim:#388fca; --advice-glow:#59bdffe0; --advice-sheen:#caf4ff91; --advice-flash:#edfdff;
   --advice-foil:linear-gradient(127deg,#edfdff,#65d2ff 12%,#297ebd 26%,#53c1ff 48%,#d6f9ff 63%,#3697d8 80%,#9be9ff);
 }
 .has-advice[data-advice="reserve"] {
-  --advice-rim:#8650aa; --advice-glow:#c98df5d9; --advice-ink:#4f2c69;
-  --advice-paper:#dec4fa; --advice-sheen:#f4d8ff91; --advice-flash:#fbf0ff;
+  --advice-rim:#8650aa; --advice-glow:#c98df5d9; --advice-sheen:#f4d8ff91; --advice-flash:#fbf0ff;
   --advice-foil:linear-gradient(127deg,#fbebff,#cf9bff 12%,#8751b1 26%,#c38aeb 48%,#efd5ff 63%,#ab70cc 80%,#e5b4ff);
 }
 .market-card.has-advice .card-stock {
@@ -870,36 +868,21 @@ button, img { -webkit-touch-callout: none; }
 .has-advice:not(:focus-visible):is(.noble-tile,#turn-action,[data-cost-color]) {
   outline:2px solid var(--advice-rim); outline-offset:1px;
 }
-.has-advice[data-cost-color] { position:relative; }
 .seat .holdings-button[data-advice="buy"] {
   border-radius:4px;
   box-shadow:inset 0 0 0 3px #d1f5ff,inset 0 0 8px 3px #318ecc99,0 0 5px 1px var(--advice-glow);
 }
 .seat .holdings-button[data-advice="buy"]:not(:focus-visible) { outline:2px solid #5abfff; outline-offset:-2px; }
-.holdings-button[data-advice="buy"] > .advice-stamp { top:2px; right:2px; }
-.advice-stamp {
-  position:absolute; z-index:16; pointer-events:none; top:45%; right:0;
-  display:inline-flex; align-items:center; justify-content:center; gap:2px;
-  padding:2px 4px 2px 5px; border:1px solid var(--advice-rim); border-radius:6px 1px 1px 6px;
-  color:var(--advice-ink); background:linear-gradient(110deg,#f5f6ee,var(--advice-paper));
-  box-shadow:0 1px 2px #213e4959; white-space:nowrap;
-  font:700 clamp(9px,1.7vmin,13px)/1.15 var(--serif);
-}
-.advice-stamp b { font:inherit; color:inherit; }
-.advice-stamp .icon { width:1em; height:1em; fill:#f6f5d6; stroke-width:1.8; }
-:is(.chip-stack,.wallet-stack) > .advice-stamp {
-  display:block; inset:calc(8% - var(--halo-depth,0) * var(--pitch)) -4% -2%;
-  padding:0; background:transparent; border:2px solid #58c2ff; border-radius:50%;
+.advice-halo {
+  position:absolute; z-index:16; pointer-events:none; display:flex; justify-content:center; align-items:flex-start; gap:2px;
+  inset:calc(8% - var(--halo-depth,0) * var(--pitch)) -4% -2%;
+  border:2px solid #58c2ff; border-radius:50%;
   box-shadow:inset 0 0 0 1px #e1faff,0 0 0 1px #26658c,0 0 5px 2px #58bfffce;
 }
-:is(.chip-stack,.wallet-stack) > .advice-stamp .icon { display:none; }
-:is(.chip-stack,.wallet-stack) > .advice-stamp b {
-  position:absolute; left:-2px; top:-.55em; padding:1px 3px; border-radius:5px;
-  background:#c7edff; color:#163d58; box-shadow:0 0 0 1px #386c90;
-  font:700 clamp(9px,1.7vmin,13px)/1 var(--sans);
+.advice-halo > i {
+  width:clamp(4px,.55rem,6px); aspect-ratio:1; border-radius:50%; translate:0 -65%;
+  background:#eafaff; box-shadow:0 0 0 1px #22639b,0 0 3px #8fdfff;
 }
-:is(#turn-action,.price) > .advice-stamp { top:0; right:0; border-radius:50%; padding:2px; }
-:is(#turn-action,.price) > .advice-stamp b { display:none; }
 #turn-action.has-advice { outline-offset:-1px; }
 #dialog-layer:empty { display: none; }
 .ledger-bookmark { position:absolute; right:.84rem; top:-.29rem; width:.70rem; height:1.45rem; background:linear-gradient(90deg,#ab884e,#e1c487 39%,#c09d63 80%,#957747);
@@ -5736,33 +5719,38 @@ SOFTWARE.
   const find = selector => document.querySelector(selector);
 
   function display(targets, description) {
-    for (const [node,stamp] of shown) {
-      if (targets.has(node) && node.contains(stamp)) continue;
+    for (const [node,halo] of shown) {
+      if (targets.has(node) && (!halo || node.contains(halo))) continue;
       node.classList.remove("has-advice");
       delete node.dataset.advice;
       node.removeAttribute("aria-describedby");
-      stamp.remove();
+      halo?.remove();
       shown.delete(node);
     }
-    for (const [node,label] of targets) {
-      let stamp = shown.get(node);
-      const stack = node.querySelector(".chip-stack, .wallet-stack");
-      if (!stamp) {
-        stamp = document.createElement("span");
-        stamp.className = "advice-stamp";
-        stamp.setAttribute("aria-hidden","true");
-        stamp.innerHTML = BoardGraphics.icon("compass") + "<b></b>";
-        (stack || node).append(stamp);
+    for (const [node,count] of targets) {
+      if (!shown.has(node)) {
+        const stack = node.querySelector(".chip-stack, .wallet-stack");
+        let halo = null;
+        if (stack) {
+          halo = document.createElement("span");
+          halo.className = "advice-halo";
+          halo.setAttribute("aria-hidden","true");
+          stack.append(halo);
+        }
         node.classList.add("has-advice");
         node.setAttribute("aria-describedby","advice-status");
-        shown.set(node,stamp);
+        shown.set(node,halo);
       }
-      node.dataset.advice = recommendation.action?.type || "unavailable";
-      if (stack) {
-        const resting = stack.querySelectorAll("img:not(.is-raised):not(.is-returning)");
-        stamp.style.setProperty("--halo-depth",resting.length ? resting[resting.length-1].dataset.layer : 0);
+      const kind = recommendation.action?.type || "unavailable";
+      if (node.dataset.advice !== kind) node.dataset.advice = kind;
+      const halo = shown.get(node);
+      if (halo) {
+        const resting = halo.parentElement.querySelectorAll("img:not(.is-raised):not(.is-returning)");
+        halo.style.setProperty("--halo-depth",resting.length ? resting[resting.length-1].dataset.layer : 0);
+        const dots = count > 1 ? count : 0;
+        if (halo.childElementCount !== dots)
+          halo.replaceChildren(...Array.from({length:dots},()=>document.createElement("i")));
       }
-      if (stamp.lastChild.textContent !== label) stamp.lastChild.textContent = label;
     }
     const status = document.getElementById("advice-status");
     if (status.textContent !== description) status.textContent = description;
@@ -5780,18 +5768,18 @@ SOFTWARE.
       clear(); return;
     }
     const targets = new Map();
-    const mark = (selector,label) => {
+    const mark = (selector,count = 1) => {
       const node = find(selector);
-      if (node) targets.set(node,label);
+      if (node) targets.set(node,count);
     };
     const hand = ReserveHand.owner;
-    const confirm = () => mark("#turn-action","确认");
+    const confirm = () => mark("#turn-action");
     let text = "";
     if (reading || (hand !== null && !(hand === state.active && action?.type === "buy" && state.players[hand].reserved.includes(action.id)))) {
       display(targets,""); return;
     }
     if (!action) {
-      mark('[data-open="settings"]',"暂无提示");
+      mark('[data-open="settings"]');
       text = "此局面暂时无法取得困难棋手建议，可继续自行行动。";
     } else if (action.type === "take" || action.type === "discard") {
       const take = action.type === "take";
@@ -5802,14 +5790,14 @@ SOFTWARE.
           if (!n) return;
           names.push(colors[c]+n+"枚");
           const remaining = n-picked[c];
-          if (remaining) mark(take ? "#bank .pile-"+c : '#seat-0 .wallet-well[data-token-color="'+c+'"]',"×"+remaining);
+          if (remaining) mark(take ? "#bank .pile-"+c : '#seat-0 .wallet-well[data-token-color="'+c+'"]',remaining);
         });
         if (!targets.size) confirm();
         text = (take ? "拿取" : "归还")+names.join("、")+"。";
       }
     } else if (action.type === "noble") {
       if (!visitor || visitor.id === action.id) {
-        if (visitor) confirm(); else mark('.noble-tile[data-value="'+action.id+'"]',"迎接");
+        if (visitor) confirm(); else mark('.noble-tile[data-value="'+action.id+'"]');
         text = "迎接"+Splendor.nobles[action.id].name+"。";
       }
     } else if (action.type === "pass") {
@@ -5817,8 +5805,9 @@ SOFTWARE.
     } else if (!bank && (action.type === "reserve" || action.type === "buy")) {
       const held = state.players[0].reserved.includes(action.id);
       const reserve = action.type === "reserve";
-      const piece = held ? (hand === null ? "#seat-0 .holdings-button" : '[data-hand-card="'+action.id+'"]') :
-        action.tier ? '.deck[data-pile="base"][data-value="'+action.tier+'"]' : '.market-card[data-value="'+action.id+'"]';
+      let piece = '.market-card[data-value="'+action.id+'"]';
+      if (held) piece = hand === null ? "#seat-0 .holdings-button" : '[data-hand-card="'+action.id+'"]';
+      if (action.tier) piece = '.deck[data-pile="base"][data-value="'+action.tier+'"]';
       const selectionMatches = card && card.type === action.type &&
         (action.id ? card.id === action.id : card.tier === action.tier);
       const name = action.id ? Table.artName(action.id) : ["","Ⅰ","Ⅱ","Ⅲ"][action.tier]+"级牌堆";
@@ -5828,19 +5817,18 @@ SOFTWARE.
         display(targets,""); return;
       }
       if (selectionMatches) {
-        mark(piece,action.tier ? "盲抽" : reserve ? "预留" : "购买");
+        mark(piece);
         if (action.pay && card.pay.some((n,c)=>n !== action.pay[c])) {
           for (let c=0;c<5;c++) {
             if (card.pay[c] <= action.pay[c]) continue;
-            mark(held ? '[data-hand-card="'+action.id+'"] [data-cost-color="'+c+'"]' : '#seat-0 .wallet-well[data-token-color="'+c+'"]',"换金");
-            text += "用黄金替代"+colors[c]+(card.pay[c]-action.pay[c])+"枚。";
+            const amount = card.pay[c]-action.pay[c];
+            mark(held ? '[data-hand-card="'+action.id+'"] [data-cost-color="'+c+'"]' : '#seat-0 .wallet-well[data-token-color="'+c+'"]',amount);
+            text += "用黄金替代"+colors[c]+amount+"枚。";
           }
         } else confirm();
       } else if (!card || (reserve && card.fromSlot && !card.id && !card.tier)) {
         const longPress = reserve && action.id && !card?.fromSlot && Splendor.payment(state,action.id).canBuy;
-        const label = held && hand === null ? "看手牌" : action.tier ? "盲抽" :
-          longPress ? "长按预留" : reserve ? "预留" : "购买";
-        mark(piece,label);
+        mark(piece);
         if (longPress) text += "长按这张牌进入预留。";
       }
     }
