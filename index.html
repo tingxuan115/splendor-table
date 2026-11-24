@@ -1154,7 +1154,7 @@ button, img { -webkit-touch-callout: none; }
 /* The settings book opens on facing pages. Seat seals are also the first-player controls. */
 .dlg-panel[data-folio="settings"] { width:min(100%,641px); --folio-binding:clamp(35px,7.1vmin,54px); }
 .dlg-center-fold {
-  position:absolute; z-index:-1; left:50.5%; top:2.5%; bottom:2%; width:21px; transform:translateX(-50%); pointer-events:none;
+  position:absolute; z-index:-1; left:calc((100% + var(--folio-binding) - var(--folio-margin)) / 2); top:2.5%; bottom:2%; width:21px; transform:translateX(-50%); pointer-events:none;
   background:linear-gradient(90deg,transparent,#7958301a 34%,#72532c43 49%,#ffeecf77 57%,#fff2d72b 67%,transparent);
 }
 .dlg-settings { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); grid-template-areas:"actions sounds" "seats sounds"; gap:10px clamp(33px,8.2cqi,54px); align-items:start; }
@@ -1296,59 +1296,71 @@ button, img { -webkit-touch-callout: none; }
 .dlg-result-score { display:flex; align-items:baseline; gap:4px; margin:2px 0; }.dlg-result-score b { font:650 clamp(33px,8cqi,48px)/1 var(--digits); }.dlg-result-side.is-victor .dlg-result-score b { font-size:clamp(41px,10cqi,59px); }.dlg-result-score span { font-size:12px; }
 .dlg-result-assets { font-size:12px; }.dlg-result-assets i { padding:0 2px; color:#a28a62; font-style:normal; }
 @container dialogpanel (max-width:455px) {
-  .dlg-settings { grid-template-columns:1fr; grid-template-areas:"actions" "seats" "sounds"; gap:12px; }.dlg-center-fold { display:none; }
-  .dlg-seats-page { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:5px; }.dlg-seat-sign { grid-template-columns:38px minmax(0,1fr); }.dlg-order-seal img { width:34px; }.dlg-order-seal { height:43px; }.dlg-sound-keys { max-width:240px; margin-block:2px 9px; }
-
-  .dlg-tabs button { padding-inline:10px; }.dlg-player-totals svg { display:none; }
+  .dlg-tabs button { padding-inline:10px; }
+  .dlg-player-totals svg { display:none; }
+}
+@container dialogpanel (min-width:406px) {
+  .dlg-settings:has(> .opening-choice) { grid-template-areas:"actions sounds" "seats sounds" "opening sounds"; }
+  .dlg-settings > .opening-choice { grid-area:opening; }
+  [data-folio="settings"] .dlg-foot {
+    display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); justify-items:end;
+    column-gap:clamp(33px,8.2cqi,54px);
+  }
+}
+@container dialogpanel (min-width:406px) and (max-width:455px) {
+  .dlg-settings, [data-folio="settings"] .dlg-foot { column-gap:18px; }
+  .dlg-settings .dlg-settings-start .dlg-primary { padding-inline:8px 15px; font-size:14px; }
+  .dlg-settings .dlg-settings-start .dlg-secondary { padding-inline:4px; font-size:13px; }
+}
+@container dialogpanel (max-width:405px) {
+  /* At phone widths the printed leaf has room for one column of sections. */
+  .dlg-center-fold { display:none; }
+  .dlg-settings { display:flex; flex-direction:column; align-items:stretch; gap:12px; }
+  .dlg-settings .dlg-settings-start { gap:4px 10px; }
+  .dlg-seats-page {
+    display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); column-gap:12px;
+  }
+  .dlg-seat-sign { grid-template-columns:42px minmax(0,1fr); gap:4px; margin:0; }
+  .dlg-order-seal { height:46px; }
+  .dlg-order-seal img { width:37px; }
+  .dlg-seat-order input:checked + .dlg-order-seal::before { width:39px; height:39px; }
+  .dlg-seat-sign input[type="text"] { font-size:16px; }
+  .dlg-sound-page {
+    display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:0 14px;
+  }
+  .dlg-sound-keys { grid-area:1/1/3/2; align-self:center; width:100%; margin:0; }
+  .dlg-instrument { gap:3px; }
+  .dlg-instrument b { font-size:14px; }
+  .dlg-music-level { grid-area:1/2; margin:0; }
+  .dlg-haptics { grid-area:2/2; margin:0; }
+  .dlg-settings > .opening-choice { border-top:1px solid #a68d623c; padding-top:5px; }
+  .dlg-seats-page > legend, .dlg-sound-page > legend { margin-bottom:6px; }
+}
+@container dialogpanel (max-width:335px) {
+  .dlg-seats-page { grid-template-columns:minmax(0,1fr); row-gap:5px; }
+  .dlg-seat-sign { grid-template-columns:44px minmax(0,1fr); column-gap:8px; }
+  .dlg-header:has(.screen-toggle) { gap:3px; }
+  .dlg-header:has(.screen-toggle) h2 { letter-spacing:0; }
 }
 @container dialogpanel (max-width:359px) {
   .dlg-account-seal { width:33px; }.dlg-player-totals b { font-size:23px; }.dlg-player-totals small { font-size:10px; }.dlg-row { gap:4px; }.dlg-price { font-size:14px; }.dlg-price svg { width:16px; height:16px; }
   .dlg-header h2 { font-size:22px; }
 }
-@container dialogpanel (min-width:305px) and (max-width:455px) {
-  .dlg-settings { grid-template-columns:minmax(0,1fr) minmax(0,1fr); grid-template-areas:"actions actions" "seats sounds"; gap:5px 18px; }
-  .dlg-center-fold { display:block; }
-  .dlg-seats-page { display:block; } .dlg-seat-sign { grid-template-columns:36px minmax(0,1fr); gap:2px; margin-block:1px 3px; }
-  .dlg-seat-order { min-height:44px; } .dlg-order-seal { height:42px; } .dlg-order-seal img { width:34px; }
-  .dlg-seat-order input:checked + .dlg-order-seal::before { width:35px; height:35px; }
-  .dlg-name-field input { font-size:15px; }
-  .dlg-sound-keys { gap:0; margin:1px 0 4px; } .dlg-instrument { gap:3px; padding:1px; }
-  .dlg-instrument b { font-size:13px; } .dlg-dial { width:27px; height:27px; }
-  .dlg-dial::after { height:9px; transform-origin:50% 10.5px; }
-  .dlg-sound-page legend, .dlg-seats-page legend { margin-bottom:3px; font-size:14px; }
-}
-@container dialogpanel (min-width:305px) and (max-width:365px) {
-  .dlg-settings { grid-template-areas:"actions sounds" "seats sounds"; gap:4px 13px; }
-  .dlg-settings .dlg-settings-start { flex-wrap:nowrap; gap:1px; }
-  .dlg-settings .dlg-settings-start .dlg-primary { padding-inline:7px 13px; font-size:13px; white-space:nowrap; }
-  .dlg-settings-start .dlg-primary svg { display:none; }
-  .dlg-settings .dlg-settings-start .dlg-secondary { padding-inline:2px; font-size:12px; white-space:nowrap; }
-  .dlg-seat-sign .dlg-name-field { display:grid; grid-template-columns:auto minmax(0,1fr); align-items:center; gap:2px; }
-  .dlg-seat-sign .dlg-name-field > span { font-size:10px; }
-  .dlg-seat-sign .dlg-name-field input { padding-inline:1px; }
-}
-@container dialogpanel (min-width:365px) and (max-width:455px) {
-  .dlg-settings:has(> .opening-choice) { grid-template-areas:"actions sounds" "seats sounds"; gap:5px 18px; }
-  .dlg-settings:has(> .opening-choice) .dlg-settings-start { flex-wrap:nowrap; gap:1px; }
-  .dlg-settings:has(> .opening-choice) .dlg-settings-start .dlg-primary { padding-inline:8px 15px; font-size:14px; }
-  .dlg-settings:has(> .opening-choice) .dlg-settings-start .dlg-secondary { padding-inline:4px; font-size:12px; white-space:nowrap; }
-  .dlg-settings > .opening-choice { min-height:31px; }
-}
-@container dialogpanel (min-width:305px) and (max-width:365px) {
-  .dlg-settings:has(> .opening-choice) .dlg-seats-page { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:3px; }
-  .dlg-settings:has(> .opening-choice) .dlg-seat-sign { display:flex; flex-direction:column; gap:0; margin:0; min-width:0; }
-  .dlg-settings:has(> .opening-choice) .dlg-seat-order { min-height:40px; }
-  .dlg-settings:has(> .opening-choice) .dlg-seat-sign .dlg-name-field { width:100%; }
-  .dlg-settings:has(> .opening-choice) .dlg-seat-sign input[type="text"] { min-height:34px; font-size:13px; }
-  .dlg-settings:has(> .opening-choice) .dlg-instrument { grid-template-columns:1fr auto; grid-template-rows:auto 31px; gap:3px; align-items:center; }
-  .dlg-settings:has(> .opening-choice) .dlg-instrument b { grid-column:1/-1; }
-  .dlg-settings:has(> .opening-choice) .dlg-dial { grid-area:2/1; justify-self:end; }
-  .dlg-settings:has(> .opening-choice) .dlg-dial-state { grid-area:2/2; justify-self:start; }
-  .dlg-settings > .opening-choice { min-height:30px; font-size:13px; }
-}
 @container tabletop (height < 405px) {
   .dlg-frame { --folio-frame-y:9px; }.dlg-header { min-height:46px; padding-top:3px; padding-bottom:0; }.dlg-title-symbol { top:12px; }
   .dlg-body { padding-block:3px; }.dlg-foot { padding-block:0 5px; }.dlg-victory { margin-bottom:5px; }.dlg-result-side { grid-template-rows:47px auto auto auto; }.dlg-wax { width:41px; }.dlg-result-side.is-victor .dlg-wax { width:49px; }
+}
+@container tabletop (min-width:560px) and (max-height:355px) {
+  .dlg-settings { row-gap:3px; }
+  .dlg-seats-page { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; }
+  .dlg-seat-sign { grid-template-columns:38px minmax(0,1fr); gap:3px; margin:0; }
+  .dlg-order-seal img { width:34px; }
+  .dlg-seat-order input:checked + .dlg-order-seal::before { width:37px; height:37px; }
+  .dlg-sound-keys { margin:0 0 4px; }
+  .dlg-instrument { grid-template-columns:auto auto; justify-content:center; align-items:center; }
+  .dlg-instrument b { grid-column:1/-1; }
+  .dlg-music-level { margin:0; }
+  .dlg-seats-page > legend, .dlg-sound-page > legend { margin-bottom:3px; }
 }
 @media (pointer:coarse) {
   .dlg-header .dlg-icon-button, .dlg-panel .dlg-button, .dlg-tabs button, .dlg-rule summary, .dlg-first-options label, .dlg-name-field input, .dlg-instrument { min-height:44px; }
@@ -1420,7 +1432,7 @@ button, img { -webkit-touch-callout: none; }
   box-shadow:inset 0 -1px #aa8658,inset 0 1px #f6e7c7; }
 .rival-choice input:focus-visible + span { outline:2px solid #18516a; outline-offset:2px; }
 #cover-mode .match-choice { margin:0; }
-#cover-mode .rival-choice { margin:-3px 0 0; }
+#cover-mode .rival-choice { margin:2px 0 0; }
 #cover-mode legend { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); }
 .dlg-seat-sign .rival-choice { width:100%; margin:0; }
 .dlg-seat-sign .rival-choice legend { margin:0; font:550 11px/1.2 var(--sans); color:var(--folio-muted); }
@@ -1461,7 +1473,7 @@ button, img { -webkit-touch-callout: none; }
   color:#31291f; text-shadow:0 1px 0 #fbebc3;
 }
 .cover-lettering { display:block; color:#745035; font:400 clamp(30px,5.5vw,89px)/1.05 var(--lettering); }
-.cover-menu { width:min(100%,246px); display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); align-items:center; gap:3px 2px; }
+.cover-menu { width:min(100%,246px); display:grid; grid-template-columns:minmax(0,1fr) minmax(max-content,1fr); align-items:center; gap:3px 2px; }
 #cover-progress { grid-column:1/-1; display:flex; justify-content:center; gap:7px; margin:0 0 6px; color:#433c30; font:600 clamp(12px,1.9vmin,17px)/1.35 var(--sans); text-shadow:0 1px 1px #f7e5c6; }
 #cover-progress span { max-width:39%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 #cover-progress b { flex:none; font-family:var(--digits); }
@@ -1493,6 +1505,8 @@ button, img { -webkit-touch-callout: none; }
 .cover-menu [data-lobby="lan"] { white-space:nowrap; }
 #lan-dialog {
   width:min(460px,92vw); max-height:88vh; max-height:88dvh; padding:0;
+  inset:var(--edge-top) max(var(--edge-left),var(--edge-right)) var(--edge-bottom); margin:auto;
+  max-height:min(88dvh,calc(100dvh - var(--edge-top) - var(--edge-bottom) - 12px));
   border:1px solid #977b50; border-radius:5px 9px 7px 4px; color:#423521;
   background:#ead8b2 var(--folio-paper) center/100% 100%; box-shadow:0 5px 0 #675038,0 9px 28px #241a166e;
   font:15px/1.45 var(--serif);
@@ -1613,15 +1627,23 @@ button, img { -webkit-touch-callout: none; }
   .cover-crest { width:clamp(23px,4.5vh,43px); margin-bottom:4px; }
   #cover-title { font-size:clamp(39px,10vw,84px); }
   .cover-lettering { font-size:clamp(31px,8.5vw,65px); }
-  .cover-menu { width:min(73%,260px); }
+  .cover-menu { width:min(100%,260px); }
 }
 @media (max-height:445px) and (orientation:landscape), (max-height:610px) and (orientation:portrait) {
   .cover-crest { display:none; }
 }
-@media (orientation:portrait) and (max-height:550px) {
-  .cover-copy:has(#cover-mode:not([hidden]) .rival-choice:not([hidden])) { inset-block-start:36%; gap:4px; }
-  #game-cover:has(#cover-mode:not([hidden]) .rival-choice:not([hidden])) .cover-illustration {
-    height:48%; mask-image:linear-gradient(#000 52%,transparent 92%); -webkit-mask-image:linear-gradient(#000 52%,transparent 92%);
+@media (orientation:landscape) and (max-height:360px) {
+  .cover-screen { left:auto; right:max(calc(var(--cover-edge) + 8px),calc(var(--edge-right) + 5px)); }
+}
+@media (max-aspect-ratio:2/3) and (max-height:740px), (orientation:portrait) and (max-width:405px) and (max-height:610px) {
+  #game-cover { display:flex; flex-direction:column; }
+  .cover-illustration {
+    position:relative; inset:auto; flex:1; min-height:0; height:auto;
+    margin:var(--cover-edge) var(--cover-edge) 0;
+  }
+  .cover-copy {
+    position:relative; inset:auto; flex:none; gap:clamp(6px,1.8dvh,12px);
+    margin:0 max(6%,env(safe-area-inset-right,0px)) max(10px,2dvh,env(safe-area-inset-bottom,0px)) max(6%,env(safe-area-inset-left,0px));
   }
 }
 </style>
@@ -2226,6 +2248,23 @@ button, img { -webkit-touch-callout: none; }
   .development-market[data-orient="false"] .deck-count { top:auto; bottom:0; right:0; font-size:0; }
   .development-market[data-orient="false"] .deck-count b { font-size:min(28cqw,1.1rem); }
   .development-market[data-orient="false"] .deck-pips { display:none; }
+}
+
+/* With landscape browser bars, use the space beside the market for controls.
+   The two ledgers keep their whole height, including the reserve pockets. */
+@container tabletop (min-width:600px) and (max-height:355px) and (min-aspect-ratio:2/1) {
+  #playfield, #playfield.with-orient {
+    --tool-rail:44px;
+    --station-columns:minmax(0,1fr) var(--tool-rail) minmax(0,4fr) var(--tool-rail) minmax(0,1fr);
+    grid-template-areas:"left . nobles tools right" "left . market . right" "left . bank . right";
+  }
+  #playfield.silk-with-posts {
+    grid-template-areas:"left . nobles tools right" "left . posts . right" "left . market . right" "left . bank . right";
+  }
+  #toolbar { grid-row:1/3; align-self:start; flex-direction:column; }
+  #turn-controls {
+    grid-column:2/5; grid-template-columns:var(--tool-rail) minmax(0,1fr) var(--tool-rail);
+  }
 }
 
 /* An upright player's ledger, read left to right from either end of the table. */
